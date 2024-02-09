@@ -75,6 +75,33 @@ const Tweet = ({ id }: { id: string }) => {
   return <TweetEmbed tweetId={id} />;
 };
 
+const loadStructuredDataSchema = (title: string, date: Date) => {
+  return {
+    __html: `
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "${title}",
+      "datePublished": "${date.toISOString()}",
+      "dateModified": "${date.toISOString()}"
+    }
+    `,
+  };
+}
+
+const getPagePublished = (recordMap: ExtendedRecordMap): Date | null => {
+  const blockIds = Object.keys(recordMap.block);
+  for (const blockId of blockIds) {
+    const { value: block } = recordMap.block[blockId];
+    try {
+      if (block.type === 'page') {
+        return new Date(block.last_edited_time);
+      }  
+    } catch { return null; }
+  }
+  return null;
+}
+
 export const NotionPage = ({
   recordMap,
   previewImagesEnabled,
@@ -97,7 +124,6 @@ export const NotionPage = ({
   }
 
   const title = getPageTitle(recordMap);
-  // useful for debugging from the dev console
   if (typeof window !== "undefined") {
     const keys = Object.keys(recordMap?.block || {});
     const block = recordMap?.block?.[keys[0]]?.value;
@@ -107,8 +133,6 @@ export const NotionPage = ({
   }
 
   const socialDescription = "Every time i learned";
-  const socialImage =
-    "https://react-notion-x-demo.transitivebullsh.it/social.jpg";
 
   return (
     <>
@@ -121,21 +145,16 @@ export const NotionPage = ({
           </>
         )}
 
-        {socialImage ? (
-          <>
-            <meta name="twitter:card" content="summary_large_image" />
-            <meta name="twitter:image" content={socialImage} />
-            <meta property="og:image" content={socialImage} />
-          </>
-        ) : (
-          <meta name="twitter:card" content="summary" />
-        )}
-
         <title>{title}</title>
+        <meta property='og:type' content='website' />
         <meta property="og:title" content={title} />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:creator" content="@transitive_bs" />
         <link rel="icon" href="/favicon.ico" />
+        <script
+					type='application/ld+json'
+					dangerouslySetInnerHTML={loadStructuredDataSchema(title, getPagePublished(recordMap) ?? new Date())}
+				></script>
       </Head>
 
       <NotionRenderer
