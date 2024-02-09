@@ -9,10 +9,13 @@ import {
   rootDomain,
   rootNotionPageId
 } from '../lib/config'
+import { createSiteMap } from '../lib/stiemap'
 
 export const getStaticProps = async () => {
   const pageId = rootNotionPageId
   const recordMap = await notion.getPage(pageId)
+
+  await createSiteMap();
 
   return {
     props: {

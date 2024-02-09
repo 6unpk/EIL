@@ -121,4 +121,6 @@ sketch
 # and uncomment the following lines
 # .pnp.*
 
+public/sitemap.xml
+
 # End of https://www.toptal.com/developers/gitignore/api/react,yarn,nextjs,macos,visualstudiocode
